@@ -62,6 +62,44 @@ food_df %>%
   geom_point() + 
   coord_flip()
 ```
+```{r}
+df_q1 <- food_df %>% 
+  arrange(desc(count), ingredient) %>%
+  filter(count > 10) %>% 
+  
+  ggplot() + 
+  geom_histogram(aes(series_episode, color = ingredient)) +
+  facet_wrap(~course)
+df_q1
+```
+```{r chef}
+df_chef <- chopped_df %>% 
+  pivot_longer(
+    names_to = "Number",
+    values_to = "Chef_Name",
+    cols = c(contestant1, contestant2, contestant3, contestant4),
+  ) %>% 
+  select("Chef_Name","Number","series_episode") 
+
+df_info <- chopped_df %>% 
+  pivot_longer(
+    names_to = "help",
+    values_to = "Info",
+    cols = c(contestant1_info, contestant2_info, contestant3_info, contestant4_info),
+  ) %>% 
+  select("help", "Info")
+
+df_chef_info <- 
+  bind_cols(
+    df_chef, df_info
+  ) %>% 
+  select("Chef_Name", "Info", "series_episode")
+
+df_chef
+df_info
+df_chef_info
+```
+
 
 
 Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Ctrl+Alt+I*.
