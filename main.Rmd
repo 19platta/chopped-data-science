@@ -173,7 +173,7 @@ df_chef_info_process %>%
   
   ggplot(aes(Profession, fill = place)) +
   geom_bar() +
-  scale_y_log10() + 
+
   coord_flip()
 ```
 ```{r}
@@ -189,15 +189,27 @@ df_chef_info_process %>%
   coord_flip()
 ```
 ```{r}
-df_chef_info_process %>% 
-  drop_na() %>% 
-  filter(State > "MA") %>% 
-  
-  ggplot(aes(State, fill = place)) +
-  geom_bar() +
-  scale_y_log10() + 
-  coord_flip()
+df_prof_prop <- df_chef_info_process %>% 
+  group_by(Profession) %>% 
+  mutate(
+    count_prof = n()
+  ) %>% 
+  ungroup() %>% 
+  group_by(Profession, place) %>% 
+  mutate(
+    count_prof_place = n(),
+    prof_prop = count_prof_place/count_prof
+  )
+
+df_prof_prop
 ```
+
+```{r}
+df_prop_graph <- df_prof_prop %>% 
+  ggplot(aes(prof_prop))+
+  geom_bar()
+```
+
 
 
 Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Ctrl+Alt+I*.
