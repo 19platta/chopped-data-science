@@ -9,7 +9,7 @@ Try executing this chunk by clicking the *Run* button within the chunk or by pla
 
 ```{r}
 library(tidyverse)
-
+library(stringr)
 filename = "./data/chopped.csv"
 chopped_df <- read_csv(filename)
 
@@ -89,7 +89,7 @@ df_info <- chopped_df %>%
   ) %>% 
   select("help", "Info")
 
-df_chef_info <- 
+df_chef_info_raw <- 
   bind_cols(
     df_chef, df_info
   ) %>% 
@@ -97,9 +97,39 @@ df_chef_info <-
 
 df_chef
 df_info
-df_chef_info
+df_chef_info_raw
+```
+```{r}
+df_chef_info_raw %>% 
+  mutate(
+    noChef = !str_count(Info,"")
+  ) %>% 
+  filter(noChef == TRUE)
 ```
 
+```{r}
+df_chef_info_process <- df_chef_info_raw %>%
+  separate(
+    col = Info,
+    sep = -2,
+    into = c("Info","State"),
+  ) %>% 
+  mutate(
+    Private = str_count(Info,"Private") != 0,
+    Pastry = str_count(Info,"Pastry")!= 0,
+    Catering = str_count(Info, "Catering")!= 0,
+    Owner = str_count(Info, "Owner") != 0,
+    Executive = str_count(Info, "Executive")!= 0,
+    IsChef = str_count(Info, "")!= 0
+  ) %>% 
+  select(-Info)
+  
+df_chef_info_process
+```
+
+```{r}
+
+```
 
 
 Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Ctrl+Alt+I*.
