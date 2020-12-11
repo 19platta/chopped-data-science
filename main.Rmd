@@ -84,17 +84,17 @@ df_chef <- chopped_df %>%
 
 df_info <- chopped_df %>% 
   pivot_longer(
-    names_to = "help",
+    names_to = "num",
     values_to = "Info",
     cols = c(contestant1_info, contestant2_info, contestant3_info, contestant4_info),
   ) %>% 
-  select("help", "Info")
+  select("num", "Info")
 
 df_chef_info_raw <- 
   bind_cols(
     df_chef, df_info
   ) %>% 
-  select("Chef_Name", "Info", "series_episode")
+  select("Chef_Name", "Info", "series_episode", "num")
 
 df_chef
 df_info
@@ -109,6 +109,22 @@ df_chef_info_raw %>%
 ```
 
 ```{r}
+convert_to_name <- function(x, name) {
+  case_when(
+    x == TRUE ~ name,
+    x == FALSE ~ NA_character_,
+  )
+}
+
+convert_to_place <- function(x) {
+  case_when(
+    x == "contestant1_info" ~ "first_chopped",
+    x == "contestant2_info" ~ "second_chopped",
+    x == "contestant3_info" ~ "third_chopped",
+    x == "contestant4_info" ~ "winner"
+  )
+}
+
 df_chef_info_process <- df_chef_info_raw %>%
   separate(
     col = Info,
@@ -121,15 +137,66 @@ df_chef_info_process <- df_chef_info_raw %>%
     Catering = str_count(Info, "Catering")!= 0,
     Owner = str_count(Info, "Owner") != 0,
     Executive = str_count(Info, "Executive")!= 0,
+    Sous = str_count(Info, "Sous") != 0,
+    Restaurateur = str_count(Info, "Restaurateur") != 0,
+    Instructor = str_count(Info, "Instructor") != 0,
     IsChef = str_count(Info, "")!= 0
   ) %>% 
-  select(-Info)
+  mutate(
+    Private = convert_to_name(Private, "Private"),
+    Pastry = convert_to_name(Pastry, "Pastry"),
+    Catering = convert_to_name(Catering, "Catering"),
+    Owner = convert_to_name(Owner, "Owner"),
+    Executive = convert_to_name(Executive, "Executive"),
+    Sous = convert_to_name(Sous, "Sous"),
+    Restaurateur = convert_to_name(Restaurateur, "Restaurateur"),
+    Instructor = convert_to_name(Instructor, "Instructor"),
+    IsChef = convert_to_name(IsChef, "Chef"),
+    place = convert_to_place(num)
+  ) %>% 
+  unite(
+    col = "Profession",
+    sep = ", ",
+    c(Private, Pastry, Catering, Owner, Executive, Sous, Restaurateur, Instructor, IsChef),
+    na.rm = TRUE
+  ) %>% 
+  select(-Info, -num)
   
 df_chef_info_process
 ```
 
 ```{r}
-
+df_chef_info_process %>% 
+  filter(Profession != "Chef") %>% 
+  drop_na() %>% 
+  filter(Profession != "") %>% 
+  
+  ggplot(aes(Profession, fill = place)) +
+  geom_bar() +
+  scale_y_log10() + 
+  coord_flip()
+```
+```{r}
+df_chef_info_process %>% 
+  filter(Profession != "Chef") %>% 
+  drop_na() %>% 
+  filter(Profession != "") %>% 
+  filter(place == "winner") %>% 
+  
+  ggplot(aes(Profession)) +
+  geom_bar() +
+  scale_y_log10() + 
+  coord_flip()
+```
+```{r}
+df_chef_info_process %>% 
+  drop_na() %>% 
+  filter(State > "MA") %>% 
+  
+  ggplot(aes(State, fill = place)) +
+  geom_bar() +
+  scale_y_log10() + 
+  coord_flip()
 ```
 
 
