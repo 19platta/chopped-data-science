@@ -176,16 +176,16 @@ df_chef_info_process %>%
 
   coord_flip()
 ```
+
 ```{r}
 df_chef_info_process %>% 
   filter(Profession != "Chef") %>% 
   drop_na() %>% 
   filter(Profession != "") %>% 
-  filter(place == "winner") %>% 
   
   ggplot(aes(Profession)) +
   geom_bar() +
-  scale_y_log10() + 
+  #scale_y_log10() + 
   coord_flip()
 ```
 ```{r}
@@ -198,16 +198,34 @@ df_prof_prop <- df_chef_info_process %>%
   group_by(Profession, place) %>% 
   mutate(
     count_prof_place = n(),
-    prof_prop = count_prof_place/count_prof
-  )
+    prof_prop = count_prof_place/count_prof,
+  ) %>% 
+  group_by(Profession) %>% 
+  mutate(sd = sd(prof_prop)) 
 
-df_prof_prop
+df_prof_prop %>% glimpse
 ```
 
 ```{r}
-df_prop_graph <- df_prof_prop %>% 
-  ggplot(aes(prof_prop))+
-  geom_bar()
+df_prop_graph <- df_prof_prop %>%
+  filter(prof_prop != 1) %>% 
+  filter(place == "winner") %>% 
+  group_by(place, "desc") %>% 
+  mutate(place = fct_rev(place)) %>% 
+  mutate(Profession = fct_reorder(Profession, prof_prop)) %>% 
+  
+  ggplot(aes(Profession, prof_prop))+
+  geom_point() + 
+  coord_flip() 
+
+df_prop_graph
+```
+```{r}
+df_prof_prop %>% 
+  
+  ggplot(aes(count_prof_place, prof_prop)) + 
+  geom_violin(draw_quantiles = c(.25, .5, .75)) + 
+  coord_flip()
 ```
 
 
