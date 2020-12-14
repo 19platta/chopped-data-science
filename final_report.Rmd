@@ -7,25 +7,35 @@ authors: "Alana Huitric and Annabelle Platt"
 # Title
 <!-- ------------------------------------ -->
 
-# Question
+## Background
+<!-- ------------------------------------ -->
+
+Chopped is a TV show on the Food Network. In each episode four chefs compete in three rounds, the appetizer, entree, and dessert rounds, with one being eliminated, or "chopped", each round. The last chef left standing wins. The catch is that at the beginning of each round, the contestants are given a basket containing ingredients they must incorporate into their dish. These can range from relatively common ingredients, such as bok choy, cream cheese, or strawberries, to much wilder ones, such as gummy fried eggs. The ingredients can also sometimes be challenging to incorporate into the particular dish. A common example of this is all the dessert ingredients being savory. Failure to incorporate a mandatory ingredient into their dish will most likely result in a chef being chopped. 
+
+## Question
+<!-- ------------------------------------ -->
+
+The chefs who participate in Chopped come from a wide variety of cooking backgrounds, from private chefs to home cooks to sous chefs at fancy retaurants. In this analysis, we will investigate the question of whether chefs with more formal training are more likely to win Chopped, or if it is an even playing field. 
+
+## Dataset
+<!-- ------------------------------------ -->
+
+The data we are using was scraped from the Chopped pages on IMDB. For each episode it contains who the four contestants were, the order in which they were eliminated, information about the contestants' profession, the three judges for that episode, the ingredients for each round, and the episode rating. We also have metadata including season, season episode, and overall series episode. 
+
+
+## Uncertainty
+<!-- ------------------------------------ -->
+
+Because the data we are using is the entire population of Chopped episodes, rather than a sample, there is no uncertainty in our data. 
+
+
+## Analysis
 <!-- ------------------------------------ -->
 
 
-# Dataset
+## Conclusions
 <!-- ------------------------------------ -->
 
 
-# Analysis
-<!-- ------------------------------------ -->
-
-
-# Uncertainty
-<!-- ------------------------------------ -->
-
-
-# Conclusions
-<!-- ------------------------------------ -->
-
-
-# Remaining Questions
+## Remaining Questions
 <!-- ------------------------------------ -->
