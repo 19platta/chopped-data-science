@@ -11,6 +11,7 @@ Try executing this chunk by clicking the *Run* button within the chunk or by pla
 ```{r}
 library(tidyverse)
 library(stringr)
+library(modelr)
 filename = "./data/chopped.csv"
 chopped_df <- read_csv(filename)
 
@@ -201,7 +202,8 @@ df_prof_prop <- df_chef_info_process %>%
     prof_prop = count_prof_place/count_prof,
   ) %>% 
   group_by(Profession) %>% 
-  mutate(sd = sd(prof_prop)) 
+  mutate(sd = sd(prof_prop)) %>% 
+  ungroup()
 
 df_prof_prop %>% glimpse
 ```
@@ -209,14 +211,17 @@ df_prof_prop %>% glimpse
 ```{r}
 df_prop_graph <- df_prof_prop %>%
   filter(prof_prop != 1) %>% 
-  #filter(place == "winner") %>% 
-  group_by(place, "desc") %>% 
-  mutate(place = fct_rev(place)) %>% 
-  mutate(Profession = fct_reorder(Profession, prof_prop)) %>% 
+  mutate(
+    Profession = fct_reorder(
+      Profession, 
+      if_else(place == "winner", prof_prop, -1),
+      .fun = max
+      )
+    ) %>%
   
   ggplot(aes(Profession, prof_prop, color = place))+
   geom_point() + 
-  coord_flip() 
+  coord_flip()
 
 df_prop_graph
 ```
@@ -228,6 +233,67 @@ df_prof_prop %>%
   coord_flip()
 ```
 
+```{r}
+logit <- function(p) {
+  odds_ratio <- p / (1 - p)
+  log(odds_ratio)
+}
+
+inv.logit <- function(x) {
+  exp(x) / (1 + exp(x))
+}
+
+
+df_winner <- df_prof_prop %>% 
+  mutate(
+    winner = (place == "winner")
+  )
+
+# Select "training" data from our available measurements
+df_train <-
+  df_winner %>%
+  slice_sample(prop = .5)
+
+# Use the remaining data as "validation" data
+df_validate <-
+  anti_join(
+    df_winner,
+    df_train,
+    by = "Chef_Name"
+  )
+df_train
+df_validate
+
+fit_basic <- glm(
+  formula = winner ~ Profession,
+  data = df_train,
+  family = "binomial"
+)
+
+## Predict the winner probabilities on the validation data
+df_profession <-
+  df_validate %>%
+  add_predictions(fit_basic, var = "log_odds_ratio") %>%
+  arrange(log_odds_ratio) %>%
+  rowid_to_column(var = "order") %>%
+  ## Remember that logistic regression fits the log_odds_ratio;
+  ## convert this to a probability with inv.logit()
+  mutate(pr_winner = inv.logit(log_odds_ratio))
+
+## Plot the predicted probabilities and actual classes
+df_basic %>%
+  ggplot(aes(order, pr_winner, color = winner)) +
+  geom_hline(yintercept = 0.5, linetype = 2) +
+  geom_point() +
+
+  facet_grid(~ sex, scales = "free_x") +
+  coord_cartesian(ylim = c(0, 1)) +
+  theme(legend.position = "bottom") +
+  labs(
+    x = "Rank-ordering of Predicted Probability",
+    y = "Predicted Probability of Heart Disease"
+  )
+```
 
 
 Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Ctrl+Alt+I*.
