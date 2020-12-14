@@ -209,12 +209,12 @@ df_prof_prop %>% glimpse
 ```{r}
 df_prop_graph <- df_prof_prop %>%
   filter(prof_prop != 1) %>% 
-  filter(place == "winner") %>% 
+  #filter(place == "winner") %>% 
   group_by(place, "desc") %>% 
   mutate(place = fct_rev(place)) %>% 
   mutate(Profession = fct_reorder(Profession, prof_prop)) %>% 
   
-  ggplot(aes(Profession, prof_prop))+
+  ggplot(aes(Profession, prof_prop, color = place))+
   geom_point() + 
   coord_flip() 
 
