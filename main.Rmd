@@ -12,6 +12,9 @@ Try executing this chunk by clicking the *Run* button within the chunk or by pla
 library(tidyverse)
 library(stringr)
 library(modelr)
+library(ggrepel)
+library(ggalt)
+library(stats)
 filename = "./data/chopped.csv"
 chopped_df <- read_csv(filename)
 
@@ -230,9 +233,9 @@ df_prof_prop %>%
   
   ggplot(aes(count_prof_place, prof_prop)) + 
   geom_violin(draw_quantiles = c(.25, .5, .75)) + 
-  coord_flip()
+  coord_flip() +
+  facet_wrap(~place)
 ```
-
 ```{r}
 logit <- function(p) {
   odds_ratio <- p / (1 - p)
@@ -244,7 +247,8 @@ inv.logit <- function(x) {
 }
 
 
-df_winner <- df_prof_prop %>% 
+df_winner <- df_prof_prop %>%
+  filter(count_prof_place > 2) %>% 
   mutate(
     winner = (place == "winner")
   )
@@ -263,13 +267,19 @@ df_validate <-
   )
 df_train
 df_validate
+```
+
+```{r}
 
 fit_basic <- glm(
   formula = winner ~ Profession,
   data = df_train,
   family = "binomial"
 )
+fit_basic
+```
 
+```{r}
 ## Predict the winner probabilities on the validation data
 df_profession <-
   df_validate %>%
@@ -281,20 +291,25 @@ df_profession <-
   mutate(pr_winner = inv.logit(log_odds_ratio))
 
 ## Plot the predicted probabilities and actual classes
-df_basic %>%
+df_profession %>%
+  filter(pr_winner > 0.25) %>% 
   ggplot(aes(order, pr_winner, color = winner)) +
-  geom_hline(yintercept = 0.5, linetype = 2) +
-  geom_point() +
-
-  facet_grid(~ sex, scales = "free_x") +
+  geom_hline(yintercept = 0.25, linetype = 2) +
+  geom_point(size = 1) +
+  #facet_wrap(~ winner, scales = "free_x") +
+  geom_encircle(
+    aes(color = Profession, expand = 0.004)) +
   coord_cartesian(ylim = c(0, 1)) +
   theme(legend.position = "bottom") +
   labs(
     x = "Rank-ordering of Predicted Probability",
-    y = "Predicted Probability of Heart Disease"
-  )
+    y = "Predicted Probability of Winning"
+  ) +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
 ```
-
+```{r}
+mse(fit_basic, df_validate)
+```
 
 Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Ctrl+Alt+I*.
 
